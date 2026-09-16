@@ -101,31 +101,7 @@ function App() {
 
   return (
     <div className="app-container">
-      {showStats && (
-        <div className="stats-panel">
-          <h2>Tilastot</h2>
-          <table className="stats-table">
-            <thead>
-              <tr>
-                <th>Koppi</th>
-                <th>Käytökerrat</th>
-                <th>Käytetty (min)</th>
-                <th>Vapaana (min)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: buttonCount }).map((_, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{usageCount[index]}</td>
-                  <td>{Math.floor(totalActiveTime[index] / 1000 / 60)}</td>
-                  <td>{Math.floor(times[index] / 1000 / 60)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+
       <div className="main-content">
         <h1 className="app-title">Vessakulunhallinta</h1>
         <div className="longest-off">
@@ -134,9 +110,6 @@ function App() {
         <div className="controls">
           <button className="control-btn" onClick={removeButton}>Poista koppi</button>
           <button className="control-btn" onClick={addButton}>Lisää koppi</button>
-          <button className="control-btn" onClick={toggleStats}>
-            {showStats ? 'Piilota tilastot' : 'Näytä tilastot'}
-          </button>
         </div>
         <div className="button-grid">
           {Array.from({ length: buttonCount }).map((_, index) => (
