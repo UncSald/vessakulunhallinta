@@ -5,6 +5,9 @@ function App() {
   const [buttonCount, setButtonCount] = useState(8)
   const [activeButtons, setActiveButtons] = useState(Array(8).fill(false))
   const [times, setTimes] = useState(Array(8).fill(0))
+  const [usageCount, setUsageCount] = useState(Array(8).fill(0))
+  const [totalActiveTime, setTotalActiveTime] = useState(Array(8).fill(0))
+  const [showStats, setShowStats] = useState(true)
   const startTimesRef = useRef(Array(8).fill(Date.now()))
 
   const formatTime = (ms) => {
@@ -18,6 +21,8 @@ function App() {
     setButtonCount(newCount)
     setActiveButtons(prev => [...prev, false])
     setTimes(prev => [...prev, 0])
+    setUsageCount(prev => [...prev, 0])
+    setTotalActiveTime(prev => [...prev, 0])
     startTimesRef.current = [...startTimesRef.current, Date.now()]
   }
 
@@ -27,6 +32,8 @@ function App() {
     setButtonCount(newCount)
     setActiveButtons(prev => prev.slice(0, newCount))
     setTimes(prev => prev.slice(0, newCount))
+    setUsageCount(prev => prev.slice(0, newCount))
+    setTotalActiveTime(prev => prev.slice(0, newCount))
     startTimesRef.current = startTimesRef.current.slice(0, newCount)
   }
 
@@ -58,6 +65,17 @@ function App() {
         return newTimes
       })
     } else {
+      const duration = now - startTimesRef.current[index]
+      setTotalActiveTime(prev => {
+        const newTotal = [...prev]
+        newTotal[index] = newTotal[index] + duration
+        return newTotal
+      })
+      setUsageCount(prev => {
+        const newCount = [...prev]
+        newCount[index] = newCount[index] + 1
+        return newCount
+      })
       startTimesRef.current[index] = null
       setTimes(prevTimes => {
         const newTimes = [...prevTimes]
@@ -73,31 +91,65 @@ function App() {
     })
   }
 
+  const toggleStats = () => {
+    setShowStats(prev => !prev)
+  }
+
   const longestOff = times.reduce((maxIndex, time, index) => 
     index < buttonCount && time > times[maxIndex] ? index : maxIndex, 0
   )
 
   return (
-    <div className="app">
-      <h1 className="app-title">Vessakulunhallinta</h1>
-      <div className="longest-off">
-        Pisimpään vapaana: Koppi nro. {longestOff + 1}
-      </div>
-      <div className="controls">
-        <button className="control-btn" onClick={removeButton}>Poista koppi</button>
-        <button className="control-btn" onClick={addButton}>Lisää koppi</button>
-      </div>
-      <div className="button-grid">
-        {Array.from({ length: buttonCount }).map((_, index) => (
-          <button
-            key={index}
-            className={`timer-button ${activeButtons[index] ? 'active' : 'inactive'}`}
-            onClick={() => toggleButton(index)}
-          >
-            <div className="button-number">{index + 1}</div>
-            <div className="button-time">{formatTime(times[index])}</div>
+    <div className="app-container">
+      {showStats && (
+        <div className="stats-panel">
+          <h2>Tilastot</h2>
+          <table className="stats-table">
+            <thead>
+              <tr>
+                <th>Koppi</th>
+                <th>Käytökerrat</th>
+                <th>Käytetty (min)</th>
+                <th>Vapaana (min)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: buttonCount }).map((_, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{usageCount[index]}</td>
+                  <td>{Math.floor(totalActiveTime[index] / 1000 / 60)}</td>
+                  <td>{Math.floor(times[index] / 1000 / 60)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="main-content">
+        <h1 className="app-title">Vessakulunhallinta</h1>
+        <div className="longest-off">
+          Pisimpään vapaana: Koppi nro. {longestOff + 1}
+        </div>
+        <div className="controls">
+          <button className="control-btn" onClick={removeButton}>Poista koppi</button>
+          <button className="control-btn" onClick={addButton}>Lisää koppi</button>
+          <button className="control-btn" onClick={toggleStats}>
+            {showStats ? 'Piilota tilastot' : 'Näytä tilastot'}
           </button>
-        ))}
+        </div>
+        <div className="button-grid">
+          {Array.from({ length: buttonCount }).map((_, index) => (
+            <button
+              key={index}
+              className={`timer-button ${activeButtons[index] ? 'active' : 'inactive'}`}
+              onClick={() => toggleButton(index)}
+            >
+              <div className="button-number">{index + 1}</div>
+              <div className="button-time">{formatTime(times[index])}</div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
