@@ -22,12 +22,17 @@
   min-height: 100vh;
 }
 
+.app-container > * {
+  flex-shrink: 0;
+}
+
 .stats-panel {
   width: 300px;
   padding: 40px 20px;
   background: #f8f8f8;
   border-right: 2px solid #ccc;
   overflow-y: auto;
+  max-height: 100vh;
 }
 
 .stats-panel h2 {
@@ -218,11 +223,19 @@
     flex-direction: column;
   }
   
+  .main-content {
+    padding: 20px;
+    order: 1;
+  }
+  
   .stats-panel {
     width: 100%;
     border-right: none;
-    border-bottom: 2px solid #ccc;
+    border-top: 2px solid #ccc;
     padding: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    order: 2;
   }
   
   .stats-panel h2 {
@@ -233,10 +246,6 @@
   .stats-table td {
     padding: 8px;
     font-size: 14px;
-  }
-  
-  .main-content {
-    padding: 20px;
   }
 }
 

@@ -137,6 +137,9 @@ function App() {
         <div className="controls">
           <button className="control-btn" onClick={removeButton}>Poista koppi</button>
           <button className="control-btn" onClick={addButton}>Lisää koppi</button>
+          <button className="control-btn" onClick={toggleStats}>
+            {showStats ? 'Piilota tilastot' : 'Näytä tilastot'}
+          </button>
         </div>
         <div className="button-grid">
           {Array.from({ length: buttonCount }).map((_, index) => (
