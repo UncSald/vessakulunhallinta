@@ -8,12 +8,21 @@ function App() {
   const [usageCount, setUsageCount] = useState(Array(8).fill(0))
   const [totalActiveTime, setTotalActiveTime] = useState(Array(8).fill(0))
   const [showStats, setShowStats] = useState(true)
+  const [timestampLog, setTimestampLog] = useState([])
   const startTimesRef = useRef(Array(8).fill(Date.now()))
+  const occupiedStartRef = useRef(Array(8).fill(null))
 
   const formatTime = (ms) => {
     const seconds = Math.floor(ms / 1000) % 60
     const minutes = Math.floor(ms / 1000 / 60)
     return `${minutes}m ${seconds}s`
+  }
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp)
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
   }
 
   const addButton = () => {
@@ -24,6 +33,7 @@ function App() {
     setUsageCount(prev => [...prev, 0])
     setTotalActiveTime(prev => [...prev, 0])
     startTimesRef.current = [...startTimesRef.current, Date.now()]
+    occupiedStartRef.current = [...occupiedStartRef.current, null]
   }
 
   const removeButton = () => {
@@ -35,6 +45,7 @@ function App() {
     setUsageCount(prev => prev.slice(0, newCount))
     setTotalActiveTime(prev => prev.slice(0, newCount))
     startTimesRef.current = startTimesRef.current.slice(0, newCount)
+    occupiedStartRef.current = occupiedStartRef.current.slice(0, newCount)
   }
 
   useEffect(() => {
@@ -58,24 +69,29 @@ function App() {
     const isActive = activeButtons[index]
     
     if (isActive) {
+      const occupiedStart = occupiedStartRef.current[index]
+      if (occupiedStart) {
+        setTotalActiveTime(prev => {
+          const newTotal = [...prev]
+          newTotal[index] = newTotal[index] + (now - occupiedStart)
+          return newTotal
+        })
+        setUsageCount(prev => {
+          const newCount = [...prev]
+          newCount[index] = newCount[index] + 1
+          return newCount
+        })
+        setTimestampLog(prev => [...prev, { button: index + 1, start: occupiedStart, end: now }])
+      }
       startTimesRef.current[index] = now
+      occupiedStartRef.current[index] = null
       setTimes(prevTimes => {
         const newTimes = [...prevTimes]
         newTimes[index] = 0
         return newTimes
       })
     } else {
-      const duration = now - startTimesRef.current[index]
-      setTotalActiveTime(prev => {
-        const newTotal = [...prev]
-        newTotal[index] = newTotal[index] + duration
-        return newTotal
-      })
-      setUsageCount(prev => {
-        const newCount = [...prev]
-        newCount[index] = newCount[index] + 1
-        return newCount
-      })
+      occupiedStartRef.current[index] = now
       startTimesRef.current[index] = null
       setTimes(prevTimes => {
         const newTimes = [...prevTimes]
@@ -101,7 +117,18 @@ function App() {
 
   return (
     <div className="app-container">
-
+      {showStats && (
+        <div className="stats-panel">
+          <h2>Käyttöhistoria</h2>
+          <div className="stats-content">
+            {timestampLog.map((entry, i) => (
+              <div key={i} className="timestamp-entry">
+                Koppi {entry.button}: {formatTimestamp(entry.start)}-{formatTimestamp(entry.end)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="main-content">
         <h1 className="app-title">Vessakulunhallinta</h1>
         <div className="longest-off">
